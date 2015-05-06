@@ -151,12 +151,30 @@ class Exam_control extends CI_Controller
             ->where('exam_id', $id)
             ->where('user_id', $user_id)
             ->count_all_results('result');
+        $last_score = $this->db
+            ->where('exam_id', $id)
+            ->where('user_id', $user_id)
+            ->select_max('result_percent')
+            ->get('result')->row()->result_percent;
+        $passmark = $this->db
+            ->where('title_id', $id)
+            ->get('exam_title')->row()->pass_mark;
+        $passmark = (integer)$passmark;
+        $last_score = (integer)$last_score;
+        if ($last_score >= $passmark) {
+            $message = '<div class="alert alert-success alert-dismissable">'
+                . '<button type="button" class="close" data-dismiss="alert" aria-hidden="TRUE">&times;</button>'
+                . 'Congratulations! You already did and passed this exam!</div>';
+            $this->session->set_flashdata('message', $message);
+            redirect(base_url('dashboard/' . $user_id));
+//            show warning message here.
+        }
         if ($count >= 2) {
             $message = '<div class="alert alert-danger alert-dismissable">'
                 . '<button type="button" class="close" data-dismiss="alert" aria-hidden="TRUE">&times;</button>'
                 . 'You have exceeded this exam attempts limit!</div>';
             $this->session->set_flashdata('message', $message);
-            redirect(base_url('dashboard/'.$user_id));
+            redirect(base_url('dashboard/' . $user_id));
 //            show warning message here.
         }
         $data = array();
